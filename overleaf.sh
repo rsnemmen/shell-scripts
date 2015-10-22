@@ -16,14 +16,10 @@ git clone $overleaf $folder
 git remote rename origin overleaf
 
 # Adds Github server
-case $github in
-    *git ) git remote add github $github ; break;;
-    * ) echo "No Github/Bitbucket server.";;
-esac
+git remote add github $github
 
 # Be able to push to both overleaf and github (git push both)
 git remote add both $overleaf
 git remote set-url --add --push both $overleaf
-case $github in
-    *git ) git remote set-url --add --push both $github ; break;;
-esac
+git remote set-url --add --push both $github
+
