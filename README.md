@@ -7,6 +7,11 @@ Assorted shell scripts for performing different tasks, ranging from cleaning a d
 
 	sh script.sh <arguments>
 
+| Script name       | Description           | 
+| ------------- |-------------| 
+| cleantex.awk      | Script that processes the TeX file with a *Science* paper. Removes everything but the abstract. | 
+|   |       |  
+
 
 
 
