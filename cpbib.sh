@@ -4,4 +4,4 @@
 # removing all hyperlinks from the file along the way to avoid
 # displaying the addresses with the latest ApJ latex template.
 #
-sed '/http/d' ~/work/mypapers/refs.bib > .
+sed '/http/d' ~/work/mypapers/refs.bib > refs.bib
