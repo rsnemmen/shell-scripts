@@ -1,5 +1,5 @@
 #!/bin/sh
-# Extract first two pages of each PDF and put in another folder
+# Extract first page of each PDF and put in another folder
 
 for X in $( ls -1 *.pdf )
 do
