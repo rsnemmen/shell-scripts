@@ -3,3 +3,5 @@
 `move-cue.sh`: I had a ROM set where every PS1 game was in a layers of subdirectories. I just wanted to move all of those files to the current directory, removing the subdirectories afterwards. This script accomplishes that.
 
 `rename.sh`: I had a ROM set where each game's filename followed the convetion `10. <gamename>.*`. I just wanted to get rid of the leading number. This script does that, renaming all files in the current directory.
+
+`chd-from-iso`: converts all iso or cue/bin games in the current directory to the compressed chd format.

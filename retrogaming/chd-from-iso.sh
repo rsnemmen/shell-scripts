@@ -1,4 +1,20 @@
 #!/bin/bash
+# -----------------------------------------------------------------------------
+# Script: chd-from-iso.sh
+#
+# Description:
+#   This script converts all disk image files with a specified extension (e.g., iso, cue)
+#   in the current directory to CHD (Compressed Hunks of Data) format using the
+#   'chdman' tool. It performs a dependency check to ensure 'chdman' is available,
+#   validates the provided file extension, and processes each matching file.
+#
+# Requirements:
+#   - chdman must be installed and accessible in the system's PATH.
+#
+# Example:
+#   ./chd-from-iso.sh cue
+#
+# -----------------------------------------------------------------------------
 
 # Check if chdman is installed and available
 if ! command -v chdman &> /dev/null; then
