@@ -1,42 +1,74 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
-# This script generates md5 hashes for all files in the current directory.
-# If pv is available, it uses it to show progress for each md5 operation.
+# Generate MD5 hashes for all regular files in the current directory.
+#
+# Options:
+#   -o FILE   Write checksums to FILE instead of stdout
+#   -h        Show this help and exit
+#
+# If pv(1) is available it is used to display per-file progress.
 
-# Set the output file name
-output_file="md5-checksums.txt"
+set -euo pipefail
 
-# Create an empty output file
-touch "$output_file"
+##############################################################################
+# Argument parsing
+##############################################################################
+output_file=""          # empty ⇒ print to stdout
 
-# Check if the `pv` command is available
-if command -v pv &> /dev/null; then
-    use_pv=true
-else
-    use_pv=false
+usage() {
+    cat <<EOF
+Usage: ${0##*/} [-o output_file]
+
+If -o is omitted, checksums are written to standard output.
+EOF
+    exit "${1:-0}"
+}
+
+while getopts ":o:h" opt; do
+    case "$opt" in
+        o) output_file="$OPTARG" ;;
+        h) usage 0 ;;
+        \?) printf 'Error: invalid option -%s\n' "$OPTARG" >&2; usage 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+##############################################################################
+# Environment checks
+##############################################################################
+use_pv=false
+command -v pv &> /dev/null && use_pv=true
+
+# Create/truncate the output file only if one was requested.
+if [[ -n "$output_file" ]]; then
+    : > "$output_file"
 fi
 
-# Iterate over the files in the current directory
+##############################################################################
+# Helper: write a line either to file or stdout
+##############################################################################
+write_line() {
+    if [[ -n "$output_file" ]]; then
+        printf '%s\n' "$1" >> "$output_file"
+    else
+        printf '%s\n' "$1"
+    fi
+}
+
+##############################################################################
+# Main loop
+##############################################################################
 for file in *; do
-    # Skip the output file to avoid infinite loop
-    if [[ "$file" == "$output_file" ]]; then
-        continue
-    fi
+    # Skip the output file itself, directories, and non-regular files
+    [[ -n "$output_file" && "$file" == "$output_file" ]] && continue
+    [[ -d "$file"      || ! -f "$file" ]] && continue
 
-    # Skip directories
-    if [[ -d "$file" ]]; then
-        continue
-    fi
-
-    # Generate the MD5 checksum
-    if [[ "$use_pv" == true ]]; then
-        # Use pv to show progress
+    # Compute checksum
+    if $use_pv; then
         file_hash=$(pv "$file" | md5)
     else
-        # Use md5 without progress
         file_hash=$(md5 "$file")
     fi
 
-    # Write the checksum and file name to the output file
-    echo "$file_hash  $file" >> "$output_file"
+    write_line "$file_hash  $file"
 done

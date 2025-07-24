@@ -20,3 +20,8 @@ there is an issue affecting multi-disk games: fuzzycp list only one of the disks
 ## Conversion
 
 `create_chd.sh`: converts all iso or cue/bin or gdi/bin games in the current directory to the compressed chd format.
+
+
+## Downloading
+
+`steam_downloader.sh`: downloads the files of your Steam games, even if you are on a Mac or linux.
