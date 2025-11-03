@@ -6,7 +6,7 @@
 #   -o FILE   Write checksums to FILE instead of stdout
 #   -h        Show this help and exit
 #
-# If pv(1) is available it is used to display per-file progress.
+# If pv(1) is available, it is used to display per-file progress.
 
 set -euo pipefail
 
@@ -45,14 +45,24 @@ if [[ -n "$output_file" ]]; then
 fi
 
 ##############################################################################
-# Helper: write a line either to file or stdout
+# Helper functions
 ##############################################################################
 write_line() {
+    # $1 = line to write
     if [[ -n "$output_file" ]]; then
         printf '%s\n' "$1" >> "$output_file"
     else
         printf '%s\n' "$1"
     fi
+}
+
+# ANSI color codes (bold cyan for filenames)
+clr_cyan='\033[1;36m'
+clr_reset='\033[0m'
+
+print_processing() {
+    # $1 = filename
+    printf 'Processing: %b%s%b\n' "$clr_cyan" "$1" "$clr_reset" >&2
 }
 
 ##############################################################################
@@ -62,6 +72,8 @@ for file in *; do
     # Skip the output file itself, directories, and non-regular files
     [[ -n "$output_file" && "$file" == "$output_file" ]] && continue
     [[ -d "$file"      || ! -f "$file" ]] && continue
+
+    print_processing "$file"
 
     # Compute checksum
     if $use_pv; then
