@@ -11,6 +11,9 @@ Converts LaTeX delimiters in markdown to standard notation and generates PDF:
   \\(...\\) -> \$...\$     (inline math)
   \\[...\\] -> \$\$...\$\$ (display math)
 
+Also ensures that top-level bullet lists have a blank line before them so
+Pandoc reliably detects them as lists.
+
 Options:
   -s, --simple   Use basic Pandoc PDF output (no template, 1in margins)
   -h, --help     Show this help message and exit
@@ -35,6 +38,10 @@ check_dependencies() {
         missing+=("sed")
     fi
     
+    if ! command -v awk &> /dev/null; then
+        missing+=("awk")
+    fi
+
     if ! command -v pandoc &> /dev/null; then
         missing+=("pandoc")
     fi
@@ -52,6 +59,52 @@ convert_delimiters() {
         -e 's/\\)/$/g' \
         -e 's/\\\[/$$/g' \
         -e 's/\\\]/$$/g'
+}
+
+# Ensure there is a blank line before bullet lists
+ensure_blank_before_lists() {
+    awk '
+        BEGIN {
+            prev_is_blank = 1
+            prev_is_bullet = 0
+            in_code_block = 0
+        }
+        {
+            line = $0
+
+            # Detect start or end of fenced code blocks (``` or ~~~, up to 3 spaces indent)
+            if (match(line, /^[[:space:]]*(```+|~~~+)/)) {
+                print line
+                in_code_block = !in_code_block
+                prev_is_blank = 0
+                prev_is_bullet = 0
+                next
+            }
+
+            if (in_code_block) {
+                # Inside code blocks, do not touch bullets or add blank lines
+                print line
+                prev_is_blank = (line ~ /^[[:space:]]*$/)
+                prev_is_bullet = 0
+                next
+            }
+
+            is_blank  = (line ~ /^[[:space:]]*$/)
+            # Top-level bullets: optional spaces, then -, + or *, then a space
+            is_bullet = (line ~ /^[[:space:]]*[-+*] +/)
+
+            # If this line starts a bullet list and the previous line
+            # is not blank and not a bullet, insert a blank line.
+            if (is_bullet && !prev_is_blank && !prev_is_bullet) {
+                print ""
+            }
+
+            print line
+
+            prev_is_blank  = is_blank
+            prev_is_bullet = is_bullet
+        }
+    '
 }
 
 use_simple=0
@@ -120,9 +173,9 @@ fi
 temp_file=$(mktemp)
 trap "rm -f '$temp_file'" EXIT
 
-# Convert delimiters and save to temp file
-echo "Converting LaTeX delimiters..." >&2
-convert_delimiters < "$input_path" > "$temp_file"
+# Convert delimiters, then normalize bullet lists, and save to temp file
+echo "Converting LaTeX delimiters and normalizing bullet lists..." >&2
+convert_delimiters < "$input_path" | ensure_blank_before_lists > "$temp_file"
 
 # Generate PDF with pandoc
 echo "Generating PDF with pandoc..." >&2
