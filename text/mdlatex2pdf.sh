@@ -5,20 +5,25 @@
 
 show_usage() {
     cat << EOF
-Usage: $0 <input.md> [output.pdf]
+Usage: $0 [options] <input.md> [output.pdf]
 
 Converts LaTeX delimiters in markdown to standard notation and generates PDF:
   \\(...\\) -> \$...\$     (inline math)
   \\[...\\] -> \$\$...\$\$ (display math)
 
-Arguments:
-  input.md    Input markdown file
-  output.pdf  Output PDF filename (optional, defaults to input name with .pdf)
+Options:
+  -s, --simple   Use basic Pandoc PDF output (no template, 1in margins)
+  -h, --help     Show this help message and exit
 
-Example:
+Arguments:
+  input.md       Input markdown file
+  output.pdf     Output PDF filename (optional, defaults to input name with .pdf)
+
+Examples:
   $0 document.md
   $0 document.md output.pdf
-  $0 notes.md my-notes.pdf
+  $0 --simple document.md
+  $0 -s document.md simple-output.pdf
 EOF
 }
 
@@ -49,51 +54,94 @@ convert_delimiters() {
         -e 's/\\\]/$$/g'
 }
 
-# Show help
-if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ $# -eq 0 ]; then
+use_simple=0
+
+# Parse options
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -s|--simple)
+            use_simple=1
+            shift
+            ;;
+        -h|--help)
+            show_usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            echo "Error: Unknown option: $1" >&2
+            show_usage
+            exit 1
+            ;;
+        *)
+            # First non-option argument: input file
+            break
+            ;;
+    esac
+done
+
+# Need at least an input file after options
+if [ $# -eq 0 ]; then
     show_usage
-    exit 0
+    exit 1
 fi
 
 # Check dependencies
 check_dependencies
 
-# Get input file
+# Get input file (positional)
 input_file="$1"
+shift
 
-# handles stdin, -, files
-if [ ! -r "$input_file" ]; then
-    echo "Error: Cannot read input '$input_file'" >&2
-    exit 1
-fi
-
-# Optional: Add stdin support
-if [ "$input_file" = "-" ]; then
-    input_file="/dev/stdin"
-fi
-
-# Determine output filename
-if [ -n "$2" ]; then
-    output_file="$2"
+# Determine output filename (optional positional)
+if [ -n "${1-}" ]; then
+    output_file="$1"
 else
     # Remove .md extension and add .pdf
     output_file="${input_file%.md}.pdf"
 fi
 
+# Support stdin with "-"
+input_path="$input_file"
+if [ "$input_file" = "-" ]; then
+    input_path="/dev/stdin"
+fi
+
+# Ensure input is readable (file or /dev/stdin)
+if [ ! -r "$input_path" ]; then
+    echo "Error: Cannot read input '$input_file'" >&2
+    exit 1
+fi
+
 # Create temporary file for converted markdown
 temp_file=$(mktemp)
-trap "rm -f $temp_file" EXIT
+trap "rm -f '$temp_file'" EXIT
 
 # Convert delimiters and save to temp file
 echo "Converting LaTeX delimiters..." >&2
-convert_delimiters < "$input_file" > "$temp_file"
+convert_delimiters < "$input_path" > "$temp_file"
 
 # Generate PDF with pandoc
 echo "Generating PDF with pandoc..." >&2
-pandoc "$temp_file" -o "$output_file" \
-    --pdf-engine=xelatex \
-    --toc \
-    -V geometry:margin=1in
+
+if [ "$use_simple" -eq 1 ]; then
+    # Simple / boring format
+    pandoc "$temp_file" -o "$output_file" \
+        --pdf-engine=xelatex \
+        --toc \
+        -V geometry:margin=1in
+else
+    # Default: fancy eisvogel template
+    pandoc "$temp_file" -o "$output_file" \
+        --from=markdown \
+        --template=eisvogel \
+        --syntax-highlighting=idiomatic \
+        --pdf-engine=xelatex \
+        --toc
+fi
 
 if [ $? -eq 0 ]; then
     echo "Success! PDF created: $output_file" >&2
