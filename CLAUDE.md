@@ -64,6 +64,16 @@ check_dependencies() {
 | `mount-images/` | SSH, USB, and disk image mounting |
 | `image_processing/` | Image resizing, screenshots |
 | `system/` | macOS system monitoring |
+| `docs/` | MkDocs source — one `.md` page per category |
+
+## Documentation Website
+
+The repo has a MkDocs Material site configured in `mkdocs.yml`.
+
+- Preview locally: `mkdocs serve`
+- Deploy to GitHub Pages: `mkdocs gh-deploy`
+
+When adding or updating scripts, keep the corresponding page in `docs/` in sync.
 
 ## Notable Scripts
 
