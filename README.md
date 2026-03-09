@@ -3,7 +3,7 @@ Miscellaneous shell scripts
 
 Assorted shell scripts for performing different tasks, ranging from cleaning a directory of LaTeX documents to converting audio/video formats, managing game ROMs, and processing PDFs. Accumulated over many years, 60+ scripts spanning 10 categories.
 
-**[Documentation website](https://rsnemmen.github.io/shell/)**
+**[Documentation website](https://rsnemmen.github.io/shell-scripts/)**
 
 ## Usage
 
