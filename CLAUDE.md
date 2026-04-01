@@ -60,7 +60,7 @@ check_dependencies() {
 | `movies/` | Video encoding, subtitle extraction |
 | `file-utilities/` | Batch rename, MD5 hashing, Jupyter→Markdown |
 | `gaming/` | ROM management, CHD conversion, M3U playlists |
-| `transferring/` | rsync/cp-based backup and upload |
+| `transferring/` | rsync/cp-based backup, upload, and Figshare FTPS transfer |
 | `mount-images/` | SSH, USB, and disk image mounting |
 | `image_processing/` | Image resizing, screenshots |
 | `system/` | macOS system monitoring |
