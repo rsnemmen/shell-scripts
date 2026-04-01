@@ -117,13 +117,14 @@ sh script.sh <arguments>
 
 ## Transferring (`transferring/`)
 
-**Dependencies:** `rsync`, `wget`
+**Dependencies:** `rsync`, `wget`, `lftp`
 
 | Script | Description |
 |--------|-------------|
 | `csync.sh` | Sync current directory to remote server via rsync/SSH |
 | `gdrive-download.sh` | Download file from Google Drive by FILE_ID |
 | `dropbox.sh` | Start Dropbox daemon and monitor status |
+| `figshare_upload.sh` | Upload a directory to Figshare via FTPS (interactive, resumable) |
 
 ---
 
