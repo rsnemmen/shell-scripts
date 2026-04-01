@@ -90,6 +90,7 @@ LOCAL_DIR="$(pwd)"
 SCRIPT_NAME="$(basename "$0")"
 
 lftp -u "$FTP_USER","$FTP_PASS" "$FTPS_HOST" <<EOF
+set cmd:interactive true
 set ftp:ssl-force true
 set ftp:ssl-protect-data true
 set ssl:verify-certificate no
