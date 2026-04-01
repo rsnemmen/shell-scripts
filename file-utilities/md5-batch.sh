@@ -39,6 +39,20 @@ shift $((OPTIND - 1))
 use_pv=false
 command -v pv &> /dev/null && use_pv=true
 
+# Pick the available MD5 tool; normalise output to a bare hash via a wrapper.
+# md5sum (Linux): "hash  file" or "hash  -" from stdin
+# md5    (macOS): "MD5 (file) = hash", but -q prints just the hash
+if command -v md5sum &>/dev/null; then
+    _md5_hash() { md5sum "$1" | awk '{print $1}'; }
+    _md5_hash_stdin() { md5sum | awk '{print $1}'; }
+elif command -v md5 &>/dev/null; then
+    _md5_hash() { md5 -q "$1"; }
+    _md5_hash_stdin() { md5; }
+else
+    printf 'Error: neither md5sum nor md5 found in PATH\n' >&2
+    exit 1
+fi
+
 # Create/truncate the output file only if one was requested.
 if [[ -n "$output_file" ]]; then
     : > "$output_file"
@@ -75,11 +89,11 @@ for file in *; do
 
     print_processing "$file"
 
-    # Compute checksum
+    # Compute checksum (always a bare hash)
     if $use_pv; then
-        file_hash=$(pv "$file" | md5)
+        file_hash=$(pv "$file" | _md5_hash_stdin)
     else
-        file_hash=$(md5 "$file")
+        file_hash=$(_md5_hash "$file")
     fi
 
     write_line "$file_hash  $file"
