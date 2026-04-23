@@ -5,7 +5,24 @@
 # rank_clippies.sh | pbcopy
 set -euo pipefail
 
-DIR="$HOME/Dropbox/codes/python/LLM_rank"
+CANDIDATES=(
+  "$HOME/Dropbox/codes/python_projects/ai/LLM_rank"
+  "$HOME/codes/python_projects/ai/LLM_rank"
+)
+
+DIR=""
+for candidate in "${CANDIDATES[@]}"; do
+  if [[ -x "$candidate/rank_models.py" ]]; then
+    DIR="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$DIR" ]]; then
+  echo "Error: rank_models.py not found in any of:" >&2
+  printf '  %s\n' "${CANDIDATES[@]}" >&2
+  exit 1
+fi
 PATH_WEBSITE="/Users/nemmen/Dropbox/Documents/professional profile/website/rsnemmen.github.io/assets/img/clippies"
 
 print_banner() {
