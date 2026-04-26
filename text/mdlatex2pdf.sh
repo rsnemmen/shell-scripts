@@ -8,6 +8,7 @@
 show_usage() {
     cat << EOF
 Usage: $0 [options] <input.md> [output.pdf]
+       $0 [options] <input1.md> <input2.md> ...
 
 Converts LaTeX delimiters in markdown to standard notation and generates PDF:
   \\(...\\) -> \$...\$     (inline math)
@@ -21,14 +22,17 @@ Options:
   -h, --help     Show this help message and exit
 
 Arguments:
-  input.md       Input markdown file
-  output.pdf     Output PDF filename (optional, defaults to input name with .pdf)
+  input.md       One or more input markdown files; globs like *.md work fine.
+                 With a single input, an optional output.pdf may follow.
+  output.pdf     Output PDF filename (single-file mode only; default: input with .pdf)
 
 Examples:
   $0 document.md
   $0 document.md output.pdf
   $0 --simple document.md
   $0 -s document.md simple-output.pdf
+  $0 a.md b.md c.md          # batch: produces a.pdf, b.pdf, c.pdf
+  $0 -s *.md                 # batch with simple template
 EOF
 }
 
@@ -159,60 +163,81 @@ fi
 # Check dependencies
 check_dependencies
 
-# Get input file (positional)
-input_file="$1"
-shift
+# Detect single vs batch mode.
+# Single with explicit output: exactly 2 args, second ends in .pdf and does not
+# exist as a file (so it's a target name, not an accidentally globbed .pdf).
+# Single otherwise: exactly 1 arg.
+# Batch: everything else.
+_run_pandoc() {
+    local input_path="$1" output_file="$2"
+    local temp_file
+    temp_file=$(mktemp)
+    trap "rm -f '$temp_file'" EXIT
 
-# Determine output filename (optional positional)
-if [ -n "${1-}" ]; then
-    output_file="$1"
-else
-    # Remove .md extension and add .pdf
-    output_file="${input_file%.md}.pdf"
-fi
+    echo "[$output_file] Converting LaTeX delimiters and normalizing lists..." >&2
+    strip_thinking < "$input_path" | convert_delimiters | ensure_blank_before_lists > "$temp_file"
 
-# Support stdin with "-"
-input_path="$input_file"
-if [ "$input_file" = "-" ]; then
-    input_path="/dev/stdin"
-fi
-
-# Ensure input is readable (file or /dev/stdin)
-if [ ! -r "$input_path" ]; then
-    echo "Error: Cannot read input '$input_file'" >&2
-    exit 1
-fi
-
-# Create temporary file for converted markdown
-temp_file=$(mktemp)
-trap "rm -f '$temp_file'" EXIT
-
-# Convert delimiters, then normalize lists, and save to temp file
-echo "Converting LaTeX delimiters and normalizing lists..." >&2
-strip_thinking < "$input_path" | convert_delimiters | ensure_blank_before_lists > "$temp_file"
-
-# Generate PDF with pandoc
-echo "Generating PDF with pandoc..." >&2
-
-if [ "$use_simple" -eq 1 ]; then
-    # Simple / boring format
-    pandoc "$temp_file" -o "$output_file" \
-        --pdf-engine=xelatex \
-        --toc \
-        -V geometry:margin=1in
-else
-    # Default: fancy eisvogel template
-    pandoc "$temp_file" -o "$output_file" \
-        --from=markdown \
-        --template=eisvogel \
-        --syntax-highlighting=idiomatic \
-        --pdf-engine=xelatex \
-        --toc
-fi
-
-if [ $? -eq 0 ]; then
+    echo "[$output_file] Generating PDF with pandoc..." >&2
+    if [ "$use_simple" -eq 1 ]; then
+        pandoc "$temp_file" -o "$output_file" \
+            --pdf-engine=xelatex \
+            --toc \
+            -V geometry:margin=1in
+    else
+        pandoc "$temp_file" -o "$output_file" \
+            --from=markdown \
+            --template=eisvogel \
+            --syntax-highlighting=idiomatic \
+            --pdf-engine=xelatex \
+            --toc
+    fi
     echo "Success! PDF created: $output_file" >&2
+}
+
+if [ $# -eq 2 ] && [[ "$2" == *.pdf ]] && [ ! -e "$2" ] && ([ "$1" = "-" ] || [ -r "$1" ]); then
+    # Single-file mode with explicit output filename
+    input_file="$1"
+    output_file="$2"
+    input_path="$input_file"
+    [ "$input_file" = "-" ] && input_path="/dev/stdin"
+    if [ "$input_file" != "-" ] && [ ! -r "$input_path" ]; then
+        echo "Error: Cannot read input '$input_file'" >&2
+        exit 1
+    fi
+    _run_pandoc "$input_path" "$output_file"
+
+elif [ $# -eq 1 ]; then
+    # Single-file mode with derived output filename
+    input_file="$1"
+    input_path="$input_file"
+    [ "$input_file" = "-" ] && input_path="/dev/stdin"
+    output_file="${input_file%.md}.pdf"
+    if [ "$input_file" != "-" ] && [ ! -r "$input_path" ]; then
+        echo "Error: Cannot read input '$input_file'" >&2
+        exit 1
+    fi
+    _run_pandoc "$input_path" "$output_file"
+
 else
-    echo "Error: PDF generation failed" >&2
-    exit 1
+    # Batch mode: every positional arg is an input file
+    for f in "$@"; do
+        if [ "$f" = "-" ]; then
+            echo "Error: stdin ('-') cannot be used in batch mode" >&2
+            exit 1
+        fi
+    done
+    fail_count=0
+    for f in "$@"; do
+        if [ ! -r "$f" ]; then
+            echo "Error: Cannot read input '$f' — skipping" >&2
+            fail_count=$((fail_count + 1))
+            continue
+        fi
+        out="${f%.md}.pdf"
+        _run_pandoc "$f" "$out" || { fail_count=$((fail_count + 1)); continue; }
+    done
+    if [ "$fail_count" -gt 0 ]; then
+        echo "Batch complete with $fail_count failure(s)." >&2
+        exit 1
+    fi
 fi
