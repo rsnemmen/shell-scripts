@@ -189,7 +189,8 @@ _run_pandoc() {
             --template=eisvogel \
             --syntax-highlighting=idiomatic \
             --pdf-engine=xelatex \
-            --toc
+            --toc \
+            -V listings=false
     fi
     echo "Success! PDF created: $output_file" >&2
 }

@@ -79,7 +79,8 @@ for input in "$@"; do
         /^[[:space:]]*$/ { next }
         { started = 1; print }
     ' "$input" | pandoc -o "$output" --from=markdown --toc \
-        --pdf-engine=xelatex --template=eisvogel --syntax-highlighting=idiomatic
+        --pdf-engine=xelatex --template=eisvogel --syntax-highlighting=idiomatic \
+        -V listings=false
 
     echo "Done: $output" >&2
 done
