@@ -80,7 +80,8 @@ for input in "$@"; do
         { started = 1; print }
     ' "$input" | pandoc -o "$output" --from=markdown --toc \
         --pdf-engine=xelatex --template=eisvogel --syntax-highlighting=idiomatic \
-        -V listings=false
+        -V listings=false \
+        -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
 
     echo "Done: $output" >&2
 done

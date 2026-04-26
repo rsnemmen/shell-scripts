@@ -190,7 +190,8 @@ _run_pandoc() {
             --syntax-highlighting=idiomatic \
             --pdf-engine=xelatex \
             --toc \
-            -V listings=false
+            -V listings=false \
+            -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
     fi
     echo "Success! PDF created: $output_file" >&2
 }
