@@ -2,6 +2,7 @@
 set -euo pipefail
 
 # Pretty Markdown → PDF via pandoc + eisvogel template.
+# Leading blockquote lines (>) are stripped before conversion — chatbot "thinking" sections.
 # For documents with LaTeX math, use mdlatex2pdf.sh instead.
 
 show_usage() {
@@ -70,7 +71,12 @@ if [[ ! -f ~/.local/share/pandoc/templates/eisvogel.latex ]]; then
 fi
 
 printf '\033[1;36mGenerating PDF: %s → %s\033[0m\n' "$input" "$output" >&2
-pandoc "$input" -o "$output" --from=markdown --toc \
+awk '
+    started { print; next }
+    /^[[:space:]]*>/ { next }
+    /^[[:space:]]*$/ { next }
+    { started = 1; print }
+' "$input" | pandoc -o "$output" --from=markdown --toc \
     --template=eisvogel --syntax-highlighting=idiomatic
 
 echo "Done: $output" >&2

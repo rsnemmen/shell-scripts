@@ -22,6 +22,15 @@ Examples:
 EOF
 }
 
+strip_thinking() {
+    awk '
+        started { print; next }
+        /^[[:space:]]*>/ { next }
+        /^[[:space:]]*$/ { next }
+        { started = 1; print }
+    '
+}
+
 convert_delimiters() {
     sed \
         -e 's/\\( */$/g' \
@@ -36,15 +45,13 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
 fi
 
 if [ $# -eq 0 ]; then
-    # No arguments, read from stdin
-    convert_delimiters
+    strip_thinking | convert_delimiters
 else
-    # Process files and output to stdout
     for file in "$@"; do
         if [ ! -f "$file" ]; then
             echo "Error: File '$file' not found" >&2
             exit 1
         fi
-        convert_delimiters < "$file"
+        strip_thinking < "$file" | convert_delimiters
     done
 fi
