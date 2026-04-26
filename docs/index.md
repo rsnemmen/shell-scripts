@@ -35,13 +35,13 @@ Most scripts support `-h` for help.
 
 | Category | Tools Required |
 |----------|---------------|
-| Text & Docs | `pandoc`, `texcount`, `pdflatex`/`xelatex`, `sed`, `iconv` |
+| Text & Docs | `pandoc`, `texcount`, `xelatex`, `sed`, `iconv` |
 | PDF & PostScript | `pdftk`, `ghostscript`, `impose`, `psselect`, `sam2p` |
 | Music | `lame`, `sox`, `mpg123`, `ffmpeg` |
 | Movies | `ffmpeg`, `mencoder`, `yt-dlp` |
 | File Utilities | `7z`, `jupyter`/`nbconvert`, `pv` (optional) |
 | Gaming | `chdman`, `steamcmd`, Python 3 |
 | Image Processing | `imagemagick`, `parallel` |
-| Transferring | `rsync`, `wget` |
+| Transferring | `rsync`, `wget`, `lftp` |
 | Mounting | `sshfs`, `fusermount`, `mkisofs`, `cdrecord` |
 | System | (built-in macOS tools) |

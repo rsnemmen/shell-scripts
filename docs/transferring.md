@@ -1,6 +1,6 @@
 # Transferring
 
-**Dependencies:** `rsync`, `wget`, `scp`, `dropbox`
+**Dependencies:** `rsync`, `wget`, `scp`, `lftp`, `dropbox`
 
 | Script | Description |
 |--------|-------------|
@@ -8,6 +8,7 @@
 | `backup_cp.sh` | Backup data directories via cp to external drive |
 | `csync.sh` | Sync current directory to remote server via rsync/SSH |
 | `dropbox.sh` | Start Dropbox daemon and monitor status |
+| `figshare_upload.sh` | Upload files from current directory to Figshare via FTPS |
 | `gdrive-download.sh` | Download file from Google Drive by FILE_ID |
 | `upload.sh` | Create ISO from DVD, compress, and upload to remote server |
 
@@ -24,6 +25,14 @@ sh transferring/csync.sh user@myserver.com /home/user/data
 ```
 
 Syncs the current directory to a remote server via rsync over SSH. Uses `--delete` to mirror the local state and shows transfer progress.
+
+### figshare_upload.sh
+
+```sh
+sh transferring/figshare_upload.sh
+```
+
+Interactive uploader for Figshare datasets. Run from the directory containing the files to upload. Prompts for FTP credentials (username + generated password from the Figshare Integrations page), a dataset title, and confirms the file list before connecting. Uses `lftp` over FTPS to mirror the directory into a named folder under `data/` on `ftps.figshare.com`. Transfers are resumable if interrupted.
 
 ### gdrive-download.sh
 

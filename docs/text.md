@@ -1,18 +1,14 @@
 # Text & Document Processing
 
-**Dependencies:** `pandoc`, `texcount`, `pdflatex`/`xelatex`, `sed`, `iconv`
+**Dependencies:** `pandoc`, `texcount`, `xelatex`, `sed`, `iconv`
 
 | Script | Description |
 |--------|-------------|
-| `clean.sh` | Remove LaTeX build artifacts (`*.aux`, `*.log`, `*.bbl`, etc.) |
 | `count-chars.sh` | Count characters and words in a provided string |
 | `countwords.sh` | Count words in LaTeX files using texcount |
 | `cpbib.sh` | Copy .bib file stripping hyperlinks for ApJ templates |
 | `md_latex_delimiters.sh` | Convert `\(...\)` → `$...$` and `\[...\]` → `$$...$$` |
-| `md2tex.sh` | Convert Markdown to LaTeX and render with pdflatex |
 | `mdlatex2pdf.sh` | Convert Markdown with LaTeX math to PDF (most featureful) |
-| `mdproject.sh` | Copy iCloud markdown draft to local and compile via md2tex.sh |
-| `mdtex.sh` | Markdown → PDF via pandoc with custom geometry (xelatex) |
 | `utf8.sh` | Batch convert files from ISO-8859-1 to UTF-8 |
 
 ---
@@ -41,38 +37,6 @@ cat file.md | sh text/md_latex_delimiters.sh
 ```
 
 Converts LaTeX math delimiters in Markdown files to standard `$...$` notation. Writes to stdout.
-
-### mdtex.sh
-
-```sh
-sh text/mdtex.sh <input.md> <output.pdf>
-```
-
-Markdown → PDF via pandoc with custom page geometry (xelatex engine).
-
-### md2tex.sh
-
-```sh
-sh text/md2tex.sh <input.md> <main.tex>
-```
-
-Converts Markdown to LaTeX, then compiles with `pdflatex` + `bibtex` and opens the result in Skim.
-
-### mdproject.sh
-
-```sh
-sh text/mdproject.sh
-```
-
-Copies markdown from `~/Documents/iawriter/JP.txt` (iCloud) to `text.md`, then calls `md2tex.sh`.
-
-### clean.sh
-
-```sh
-sh text/clean.sh
-```
-
-Removes LaTeX build artifacts (`*.aux`, `*.log`, `*.bbl`, `*.blg`, `*.toc`, `*.bak`, etc.) from the current directory.
 
 ### countwords.sh
 
