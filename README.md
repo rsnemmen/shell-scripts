@@ -24,6 +24,7 @@ sh script.sh <arguments>
 | `count-chars.sh` | Count characters and words in a provided string |
 | `countwords.sh` | Count words in LaTeX files using texcount |
 | `cpbib.sh` | Copy .bib file stripping hyperlinks for ApJ templates |
+| `md2pdf.sh` | Pretty Markdown → PDF via pandoc + eisvogel template |
 | `md_latex_delimiters.sh` | Convert `\(...\)` → `$...$` and `\[...\]` → `$$...$$` |
 | `mdlatex2pdf.sh` | Convert Markdown with LaTeX math to PDF (most featureful) |
 | `utf8.sh` | Batch convert files from ISO-8859-1 to UTF-8 |
