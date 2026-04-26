@@ -22,7 +22,7 @@
 sh text/md2pdf.sh <input.md> [input2.md ...]
 ```
 
-Pretty Markdown → PDF using pandoc with the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template, TOC, and idiomatic syntax highlighting. Output filename is the input with `.pdf` extension. Accepts multiple files or globs (`*.md`) for batch conversion. Lighter alternative to `mdlatex2pdf.sh` for documents without LaTeX math.
+Pretty Markdown → PDF using pandoc with the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template, TOC, and idiomatic syntax highlighting. Output filename is the input with `.pdf` extension. Accepts multiple files or globs (`*.md`) for batch conversion and shows an overall progress bar with the current filename for multi-file runs. Lighter alternative to `mdlatex2pdf.sh` for documents without LaTeX math.
 
 ### mdlatex2pdf.sh
 
@@ -31,7 +31,7 @@ sh text/mdlatex2pdf.sh [options] <input.md> [output.pdf]
 sh text/mdlatex2pdf.sh [options] <input1.md> <input2.md> ...
 ```
 
-Most featureful Markdown-to-PDF converter. Converts LaTeX delimiters (`\(...\)` → `$...$`) and normalizes lists before calling pandoc. Accepts multiple files or globs (`*.md`) for batch conversion; each output is named after its input.
+Most featureful Markdown-to-PDF converter. Converts LaTeX delimiters (`\(...\)` → `$...$`) and normalizes lists before calling pandoc. Accepts multiple files or globs (`*.md`) for batch conversion, shows an overall progress bar with the current filename for multi-file runs, and names each output after its input.
 
 Flags:
 

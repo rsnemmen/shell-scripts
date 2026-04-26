@@ -59,6 +59,78 @@ check_dependencies() {
     fi
 }
 
+progress_active=0
+
+cleanup_progress() {
+    if [ "$progress_active" -eq 1 ]; then
+        printf '\n' >&2
+    fi
+}
+
+print_stderr_line() {
+    if [ "$progress_active" -eq 1 ]; then
+        printf '\n' >&2
+    fi
+    printf '%s\n' "$1" >&2
+}
+
+print_error_block() {
+    local heading="$1" log_file="$2"
+    local line
+
+    print_stderr_line "$heading"
+    if [ -s "$log_file" ]; then
+        while IFS= read -r line; do
+            printf '  %s\n' "$line" >&2
+        done < "$log_file"
+    fi
+}
+
+format_progress_label() {
+    local label="$1" max_length="${2:-48}"
+
+    if (( ${#label} <= max_length )); then
+        printf '%s' "$label"
+    else
+        printf '...%s' "${label: -$((max_length - 3))}"
+    fi
+}
+
+render_bar() {
+    local current="$1" total="$2" width="${3:-30}" label="${4:-}"
+    local percent filled empty
+    local bar=""
+    local display_label=""
+    local i
+
+    if (( total == 0 )); then
+        percent=100
+        filled=$width
+    else
+        percent=$(( current * 100 / total ))
+        filled=$(( current * width / total ))
+    fi
+    empty=$(( width - filled ))
+
+    for ((i=0; i<filled; i++)); do bar+="#"; done
+    for ((i=0; i<empty; i++)); do bar+="-"; done
+
+    if [[ -n "$label" ]]; then
+        display_label=$(format_progress_label "$label")
+        printf '\r[%s] %3d%% (%d/%d) %s\033[K' "$bar" "$percent" "$current" "$total" "$display_label" >&2
+    else
+        printf '\r[%s] %3d%% (%d/%d)\033[K' "$bar" "$percent" "$current" "$total" >&2
+    fi
+    progress_active=1
+}
+
+finish_progress() {
+    if [ "$progress_active" -eq 1 ]; then
+        printf '\n' >&2
+        progress_active=0
+    fi
+}
+
 strip_thinking() {
     awk '
         started { print; next }
@@ -169,32 +241,108 @@ check_dependencies
 # Single otherwise: exactly 1 arg.
 # Batch: everything else.
 _run_pandoc() {
-    local input_path="$1" output_file="$2"
+    local input_path="$1" output_file="$2" verbose="${3:-1}"
     local temp_file
-    temp_file=$(mktemp)
-    trap "rm -f '$temp_file'" EXIT
+    local temp_err=""
+    local status
 
-    echo "[$output_file] Converting LaTeX delimiters and normalizing lists..." >&2
-    strip_thinking < "$input_path" | convert_delimiters | ensure_blank_before_lists > "$temp_file"
-
-    echo "[$output_file] Generating PDF with pandoc..." >&2
-    if [ "$use_simple" -eq 1 ]; then
-        pandoc "$temp_file" -o "$output_file" \
-            --pdf-engine=xelatex \
-            --toc \
-            -V geometry:margin=1in
-    else
-        pandoc "$temp_file" -o "$output_file" \
-            --from=markdown \
-            --template=eisvogel \
-            --syntax-highlighting=idiomatic \
-            --pdf-engine=xelatex \
-            --toc \
-            -V listings=false \
-            -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
+    temp_file=$(mktemp) || return 1
+    if [ "$verbose" -eq 0 ]; then
+        temp_err=$(mktemp) || { rm -f "$temp_file"; return 1; }
     fi
-    echo "Success! PDF created: $output_file" >&2
+
+    if [ "$verbose" -eq 1 ]; then
+        echo "[$output_file] Converting LaTeX delimiters and normalizing lists..." >&2
+    fi
+    if [ "$verbose" -eq 1 ]; then
+        if ! strip_thinking < "$input_path" | convert_delimiters | ensure_blank_before_lists > "$temp_file"; then
+            rm -f "$temp_file" "$temp_err"
+            return 1
+        fi
+    else
+        if ! strip_thinking < "$input_path" | convert_delimiters | ensure_blank_before_lists > "$temp_file" 2>"$temp_err"; then
+            print_error_block "Error: Failed to preprocess '$input_path'" "$temp_err"
+            rm -f "$temp_file" "$temp_err"
+            return 1
+        fi
+    fi
+
+    if [ "$verbose" -eq 1 ]; then
+        echo "[$output_file] Generating PDF with pandoc..." >&2
+    fi
+    if [ "$verbose" -eq 0 ]; then
+        : > "$temp_err"
+    fi
+    if [ "$use_simple" -eq 1 ]; then
+        if [ "$verbose" -eq 1 ]; then
+            if pandoc "$temp_file" -o "$output_file" \
+                --pdf-engine=xelatex \
+                --toc \
+                -V geometry:margin=1in
+            then
+                status=0
+            else
+                status=$?
+            fi
+        else
+            if pandoc "$temp_file" -o "$output_file" \
+                --pdf-engine=xelatex \
+                --toc \
+                -V geometry:margin=1in \
+                2>"$temp_err"
+            then
+                status=0
+            else
+                status=$?
+            fi
+        fi
+    else
+        if [ "$verbose" -eq 1 ]; then
+            if pandoc "$temp_file" -o "$output_file" \
+                --from=markdown \
+                --template=eisvogel \
+                --syntax-highlighting=idiomatic \
+                --pdf-engine=xelatex \
+                --toc \
+                -V listings=false \
+                -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
+            then
+                status=0
+            else
+                status=$?
+            fi
+        else
+            if pandoc "$temp_file" -o "$output_file" \
+                --from=markdown \
+                --template=eisvogel \
+                --syntax-highlighting=idiomatic \
+                --pdf-engine=xelatex \
+                --toc \
+                -V listings=false \
+                -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}' \
+                2>"$temp_err"
+            then
+                status=0
+            else
+                status=$?
+            fi
+        fi
+    fi
+
+    if [ "$status" -ne 0 ] && [ "$verbose" -eq 0 ]; then
+        print_error_block "Error: Failed to generate PDF for '$input_path'" "$temp_err"
+    fi
+
+    rm -f "$temp_file" "$temp_err"
+
+    if [ "$status" -eq 0 ] && [ "$verbose" -eq 1 ]; then
+        echo "Success! PDF created: $output_file" >&2
+    fi
+
+    return "$status"
 }
+
+trap cleanup_progress EXIT
 
 if [ $# -eq 2 ] && [[ "$2" == *.pdf ]] && [ ! -e "$2" ] && ([ "$1" = "-" ] || [ -r "$1" ]); then
     # Single-file mode with explicit output filename
@@ -206,7 +354,7 @@ if [ $# -eq 2 ] && [[ "$2" == *.pdf ]] && [ ! -e "$2" ] && ([ "$1" = "-" ] || [ 
         echo "Error: Cannot read input '$input_file'" >&2
         exit 1
     fi
-    _run_pandoc "$input_path" "$output_file"
+    _run_pandoc "$input_path" "$output_file" 1
 
 elif [ $# -eq 1 ]; then
     # Single-file mode with derived output filename
@@ -218,7 +366,7 @@ elif [ $# -eq 1 ]; then
         echo "Error: Cannot read input '$input_file'" >&2
         exit 1
     fi
-    _run_pandoc "$input_path" "$output_file"
+    _run_pandoc "$input_path" "$output_file" 1
 
 else
     # Batch mode: every positional arg is an input file
@@ -228,16 +376,28 @@ else
             exit 1
         fi
     done
+    total=$#
+    completed=0
     fail_count=0
+
+    render_bar "$completed" "$total" 30
     for f in "$@"; do
+        render_bar "$completed" "$total" 30 "$f"
         if [ ! -r "$f" ]; then
-            echo "Error: Cannot read input '$f' — skipping" >&2
+            print_stderr_line "Error: Cannot read input '$f' — skipping"
             fail_count=$((fail_count + 1))
+            completed=$((completed + 1))
+            render_bar "$completed" "$total" 30 "$f"
             continue
         fi
         out="${f%.md}.pdf"
-        _run_pandoc "$f" "$out" || { fail_count=$((fail_count + 1)); continue; }
+        if ! _run_pandoc "$f" "$out" 0; then
+            fail_count=$((fail_count + 1))
+        fi
+        completed=$((completed + 1))
+        render_bar "$completed" "$total" 30 "$f"
     done
+    finish_progress
     if [ "$fail_count" -gt 0 ]; then
         echo "Batch complete with $fail_count failure(s)." >&2
         exit 1
