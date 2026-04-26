@@ -17,17 +17,15 @@ sh script.sh <arguments>
 
 ## Text & Document Processing (`text/`)
 
-**Dependencies:** `pandoc`, `texcount`, `pdflatex`/`xelatex`, `sed`, `iconv`
+**Dependencies:** `pandoc`, `texcount`, `xelatex`, `sed`, `iconv`
 
 | Script | Description |
 |--------|-------------|
-| `clean.sh` | Remove LaTeX build artifacts (`*.aux`, `*.log`, `*.bbl`, etc.) |
+| `count-chars.sh` | Count characters and words in a provided string |
 | `countwords.sh` | Count words in LaTeX files using texcount |
 | `cpbib.sh` | Copy .bib file stripping hyperlinks for ApJ templates |
 | `md_latex_delimiters.sh` | Convert `\(...\)` → `$...$` and `\[...\]` → `$$...$$` |
-| `md2tex.sh` | Convert Markdown to LaTeX and render with pdflatex |
 | `mdlatex2pdf.sh` | Convert Markdown with LaTeX math to PDF (most featureful) |
-| `mdtex.sh` | Markdown → PDF via pandoc with custom geometry (xelatex) |
 | `utf8.sh` | Batch convert files from ISO-8859-1 to UTF-8 |
 
 ---
@@ -69,8 +67,6 @@ sh script.sh <arguments>
 |--------|-------------|
 | `get_transcript.sh` | Download YouTube title, description, and subtitles via yt-dlp |
 | `mencoder.sh` | Create movie from sequential PNG files |
-| `dvd-rip/rip.sh` | Rip DVD to file with 2-pass encoding |
-| `dvd-rip/extrair_legendas.sh` | Extract DVD subtitles in VobSub format |
 
 ---
 
