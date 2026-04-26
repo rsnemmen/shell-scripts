@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -501,6 +501,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#figshare_uploadsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        figshare_upload.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#gdrive-downloadsh" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -672,6 +683,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#figshare_uploadsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        figshare_upload.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#gdrive-downloadsh" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -749,7 +771,7 @@
 
 
 <h1 id="transferring">Transferring</h1>
-<p><strong>Dependencies:</strong> <code>rsync</code>, <code>wget</code>, <code>scp</code>, <code>dropbox</code></p>
+<p><strong>Dependencies:</strong> <code>rsync</code>, <code>wget</code>, <code>scp</code>, <code>lftp</code>, <code>dropbox</code></p>
 <table>
 <thead>
 <tr>
@@ -775,6 +797,10 @@
 <td>Start Dropbox daemon and monitor status</td>
 </tr>
 <tr>
+<td><code>figshare_upload.sh</code></td>
+<td>Upload files from current directory to Figshare via FTPS</td>
+</tr>
+<tr>
 <td><code>gdrive-download.sh</code></td>
 <td>Download file from Google Drive by FILE_ID</td>
 </tr>
@@ -792,6 +818,10 @@
 sh transferring/csync.sh user@myserver.com /home/user/data
 </code></pre>
 <p>Syncs the current directory to a remote server via rsync over SSH. Uses <code>--delete</code> to mirror the local state and shows transfer progress.</p>
+<h3 id="figshare_uploadsh">figshare_upload.sh</h3>
+<pre><code class="language-sh">sh transferring/figshare_upload.sh
+</code></pre>
+<p>Interactive uploader for Figshare datasets. Run from the directory containing the files to upload. Prompts for FTP credentials (username + generated password from the Figshare Integrations page), a dataset title, and confirms the file list before connecting. Uses <code>lftp</code> over FTPS to mirror the directory into a named folder under <code>data/</code> on <code>ftps.figshare.com</code>. Transfers are resumable if interrupted.</p>
 <h3 id="gdrive-downloadsh">gdrive-download.sh</h3>
 <pre><code class="language-sh">sh transferring/gdrive-download.sh &lt;FILE_ID&gt; &lt;output_filename&gt;
 # example:

@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -403,28 +403,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#dvd-ripripsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        dvd-rip/rip.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dvd-ripextrair_legendassh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        dvd-rip/extrair_legendas.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -660,28 +638,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#dvd-ripripsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        dvd-rip/rip.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dvd-ripextrair_legendassh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        dvd-rip/extrair_legendas.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -722,14 +678,6 @@
 <td><code>mencoder.sh</code></td>
 <td>Create movie from sequential PNG files</td>
 </tr>
-<tr>
-<td><code>dvd-rip/rip.sh</code></td>
-<td>Rip DVD to file with 2-pass encoding</td>
-</tr>
-<tr>
-<td><code>dvd-rip/extrair_legendas.sh</code></td>
-<td>Extract DVD subtitles in VobSub format</td>
-</tr>
 </tbody>
 </table>
 <hr />
@@ -744,14 +692,6 @@
 sh movies/mencoder.sh 5 movie
 </code></pre>
 <p>Creates a movie from sequentially numbered PNG images in the current directory. Outputs both AVI and MOV files.</p>
-<h3 id="dvd-ripripsh">dvd-rip/rip.sh</h3>
-<pre><code class="language-sh">sh movies/dvd-rip/rip.sh
-</code></pre>
-<p>Rips a DVD to a file using 2-pass MPEG4 encoding with <code>mencoder</code>. Edit variables at the top of the script to configure the source device, title, and output filename.</p>
-<h3 id="dvd-ripextrair_legendassh">dvd-rip/extrair_legendas.sh</h3>
-<pre><code class="language-sh">sh movies/dvd-rip/extrair_legendas.sh
-</code></pre>
-<p>Extracts subtitles from a DVD in VobSub format using <code>mencoder</code>. Configure device and chapter range in the script before running.</p>
 
 
 

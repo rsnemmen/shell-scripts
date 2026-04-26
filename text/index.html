@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -316,50 +316,6 @@
     <span class="md-ellipsis">
       
         md_latex_delimiters.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mdtexsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        mdtex.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#md2texsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        md2tex.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mdprojectsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        mdproject.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cleansh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        clean.sh
       
     </span>
   </a>
@@ -727,50 +683,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#mdtexsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        mdtex.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#md2texsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        md2tex.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mdprojectsh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        mdproject.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cleansh" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        clean.sh
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#countwordssh" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -837,7 +749,7 @@
 
 
 <h1 id="text-document-processing">Text &amp; Document Processing</h1>
-<p><strong>Dependencies:</strong> <code>pandoc</code>, <code>texcount</code>, <code>pdflatex</code>/<code>xelatex</code>, <code>sed</code>, <code>iconv</code></p>
+<p><strong>Dependencies:</strong> <code>pandoc</code>, <code>texcount</code>, <code>xelatex</code>, <code>sed</code>, <code>iconv</code></p>
 <table>
 <thead>
 <tr>
@@ -846,10 +758,6 @@
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><code>clean.sh</code></td>
-<td>Remove LaTeX build artifacts (<code>*.aux</code>, <code>*.log</code>, <code>*.bbl</code>, etc.)</td>
-</tr>
 <tr>
 <td><code>count-chars.sh</code></td>
 <td>Count characters and words in a provided string</td>
@@ -867,20 +775,8 @@
 <td>Convert <code>\(...\)</code> → <code>$...$</code> and <code>\[...\]</code> → <code>$$...$$</code></td>
 </tr>
 <tr>
-<td><code>md2tex.sh</code></td>
-<td>Convert Markdown to LaTeX and render with pdflatex</td>
-</tr>
-<tr>
 <td><code>mdlatex2pdf.sh</code></td>
 <td>Convert Markdown with LaTeX math to PDF (most featureful)</td>
-</tr>
-<tr>
-<td><code>mdproject.sh</code></td>
-<td>Copy iCloud markdown draft to local and compile via md2tex.sh</td>
-</tr>
-<tr>
-<td><code>mdtex.sh</code></td>
-<td>Markdown → PDF via pandoc with custom geometry (xelatex)</td>
 </tr>
 <tr>
 <td><code>utf8.sh</code></td>
@@ -905,22 +801,6 @@
 cat file.md | sh text/md_latex_delimiters.sh
 </code></pre>
 <p>Converts LaTeX math delimiters in Markdown files to standard <code>$...$</code> notation. Writes to stdout.</p>
-<h3 id="mdtexsh">mdtex.sh</h3>
-<pre><code class="language-sh">sh text/mdtex.sh &lt;input.md&gt; &lt;output.pdf&gt;
-</code></pre>
-<p>Markdown → PDF via pandoc with custom page geometry (xelatex engine).</p>
-<h3 id="md2texsh">md2tex.sh</h3>
-<pre><code class="language-sh">sh text/md2tex.sh &lt;input.md&gt; &lt;main.tex&gt;
-</code></pre>
-<p>Converts Markdown to LaTeX, then compiles with <code>pdflatex</code> + <code>bibtex</code> and opens the result in Skim.</p>
-<h3 id="mdprojectsh">mdproject.sh</h3>
-<pre><code class="language-sh">sh text/mdproject.sh
-</code></pre>
-<p>Copies markdown from <code>~/Documents/iawriter/JP.txt</code> (iCloud) to <code>text.md</code>, then calls <code>md2tex.sh</code>.</p>
-<h3 id="cleansh">clean.sh</h3>
-<pre><code class="language-sh">sh text/clean.sh
-</code></pre>
-<p>Removes LaTeX build artifacts (<code>*.aux</code>, <code>*.log</code>, <code>*.bbl</code>, <code>*.blg</code>, <code>*.toc</code>, <code>*.bak</code>, etc.) from the current directory.</p>
 <h3 id="countwordssh">countwords.sh</h3>
 <pre><code class="language-sh">sh text/countwords.sh
 </code></pre>
