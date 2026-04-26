@@ -3,6 +3,7 @@
 # Convert LaTeX delimiters and generate PDF
 # Converts \(...\) to $...$ and \[...\] to $$...$$ then creates PDF with pandoc
 # Ensures there is a blank line before bullet and numbered lists.
+# Leading blockquote lines (>) are stripped before conversion — chatbot "thinking" sections.
 
 show_usage() {
     cat << EOF
@@ -52,6 +53,15 @@ check_dependencies() {
         echo "Please install them before running this script." >&2
         exit 1
     fi
+}
+
+strip_thinking() {
+    awk '
+        started { print; next }
+        /^[[:space:]]*>/ { next }
+        /^[[:space:]]*$/ { next }
+        { started = 1; print }
+    '
 }
 
 convert_delimiters() {
@@ -179,7 +189,7 @@ trap "rm -f '$temp_file'" EXIT
 
 # Convert delimiters, then normalize lists, and save to temp file
 echo "Converting LaTeX delimiters and normalizing lists..." >&2
-convert_delimiters < "$input_path" | ensure_blank_before_lists > "$temp_file"
+strip_thinking < "$input_path" | convert_delimiters | ensure_blank_before_lists > "$temp_file"
 
 # Generate PDF with pandoc
 echo "Generating PDF with pandoc..." >&2
