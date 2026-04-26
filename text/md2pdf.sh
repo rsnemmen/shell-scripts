@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Pretty Markdown → PDF via pandoc + eisvogel template.
-# Leading blockquote lines (>) are stripped before conversion — chatbot "thinking" sections.
+# Leading chatbot thinking preambles are stripped before conversion.
 # For documents with LaTeX math, use mdlatex2pdf.sh instead.
 
 show_usage() {
@@ -15,14 +15,17 @@ Converts one or more Markdown files to PDF using pandoc and the eisvogel templat
 Output filename is derived by stripping the input's extension and adding .pdf.
 
 Options:
+  --toc        Include a table of contents
+  --no-toc     Do not include a table of contents (default)
   -h, --help   Show this help message and exit
 
 Arguments:
   input.md     One or more input Markdown files (globs like *.md are fine)
 
 Examples:
-  $0 report.md              # produces report.pdf
-  $0 a.md b.md c.md        # produces a.pdf, b.pdf, c.pdf
+  $0 report.md              # produces report.pdf without a TOC
+  $0 --toc report.md        # produces report.pdf with a TOC
+  $0 a.md b.md c.md         # produces a.pdf, b.pdf, c.pdf
   $0 *.md                   # batch-convert all .md files in current directory
 EOF
 }
@@ -103,14 +106,98 @@ finish_progress() {
     fi
 }
 
+strip_leading_thinking() {
+    awk '
+        function flush_buffer(    i) {
+            for (i = 1; i <= buffered_count; i++) {
+                print buffered[i]
+            }
+            buffered_count = 0
+        }
+
+        BEGIN {
+            mode = "start"
+            buffered_count = 0
+        }
+
+        {
+            line = $0
+            lower = tolower(line)
+            is_blank = (line ~ /^[[:space:]]*$/)
+            is_quote = (line ~ /^[[:space:]]*>/)
+            is_thinking_marker = (line ~ /^[[:space:]]*[*_][^*_]*[*_][[:space:]]*$/ && lower ~ /thinking/)
+
+            if (mode == "start") {
+                if (NR == 1 && is_thinking_marker) {
+                    buffered[++buffered_count] = line
+                    mode = "maybe-thinking"
+                    next
+                }
+
+                print line
+                mode = "print"
+                next
+            }
+
+            if (mode == "maybe-thinking") {
+                if (is_blank) {
+                    buffered[++buffered_count] = line
+                    next
+                }
+
+                if (is_quote) {
+                    mode = "skip-thinking"
+                    next
+                }
+
+                flush_buffer()
+                print line
+                mode = "print"
+                next
+            }
+
+            if (mode == "skip-thinking") {
+                if (is_blank || is_quote) {
+                    next
+                }
+
+                print line
+                mode = "print"
+                next
+            }
+
+            print line
+        }
+
+        END {
+            if (mode == "maybe-thinking") {
+                flush_buffer()
+            }
+        }
+    '
+}
+
 convert_file() {
     local input="$1" output="$2" verbose="${3:-1}"
     local status
     local temp_err=""
+    local -a pandoc_args=(
+        -o "$output"
+        --from=markdown
+        --pdf-engine=xelatex
+        --template=eisvogel
+        --syntax-highlighting=idiomatic
+        -V listings=false
+        -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
+    )
 
     if [[ ! -r "$input" ]]; then
         print_stderr_line "Error: Cannot read input '$input'"
         return 1
+    fi
+
+    if [[ "$toc_enabled" -eq 1 ]]; then
+        pandoc_args+=(--toc)
     fi
 
     if [[ "$verbose" -eq 1 ]]; then
@@ -120,30 +207,14 @@ convert_file() {
     fi
 
     if [[ "$verbose" -eq 1 ]]; then
-        if awk '
-            started { print; next }
-            /^[[:space:]]*>/ { next }
-            /^[[:space:]]*$/ { next }
-            { started = 1; print }
-        ' "$input" | pandoc -o "$output" --from=markdown --toc \
-            --pdf-engine=xelatex --template=eisvogel --syntax-highlighting=idiomatic \
-            -V listings=false \
-            -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
+        if strip_leading_thinking < "$input" | pandoc "${pandoc_args[@]}"
         then
             status=0
         else
             status=$?
         fi
     else
-        if awk '
-            started { print; next }
-            /^[[:space:]]*>/ { next }
-            /^[[:space:]]*$/ { next }
-            { started = 1; print }
-        ' "$input" | pandoc -o "$output" --from=markdown --toc \
-            --pdf-engine=xelatex --template=eisvogel --syntax-highlighting=idiomatic \
-            -V listings=false \
-            -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}' \
+        if strip_leading_thinking < "$input" | pandoc "${pandoc_args[@]}" \
             2>"$temp_err"
         then
             status=0
@@ -164,9 +235,19 @@ convert_file() {
 
 trap cleanup_progress EXIT
 
+toc_enabled=0
+
 # Parse options
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --toc)
+            toc_enabled=1
+            shift
+            ;;
+        --no-toc)
+            toc_enabled=0
+            shift
+            ;;
         -h|--help)
             show_usage
             exit 0

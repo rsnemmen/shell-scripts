@@ -19,10 +19,15 @@
 ### md2pdf.sh
 
 ```sh
-sh text/md2pdf.sh <input.md> [input2.md ...]
+sh text/md2pdf.sh [--toc|--no-toc] <input.md> [input2.md ...]
 ```
 
-Pretty Markdown → PDF using pandoc with the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template, TOC, and idiomatic syntax highlighting. Output filename is the input with `.pdf` extension. Accepts multiple files or globs (`*.md`) for batch conversion and shows an overall progress bar with the current filename for multi-file runs. Lighter alternative to `mdlatex2pdf.sh` for documents without LaTeX math.
+Pretty Markdown → PDF using pandoc with the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template and idiomatic syntax highlighting. Output filename is the input with `.pdf` extension. Accepts multiple files or globs (`*.md`) for batch conversion and shows an overall progress bar with the current filename for multi-file runs. Lighter alternative to `mdlatex2pdf.sh` for documents without LaTeX math. By default it does **not** add a table of contents; pass `--toc` to include one.
+
+Flags:
+
+- `--toc` — include a table of contents
+- `--no-toc` — suppress the table of contents (default)
 
 ### mdlatex2pdf.sh
 

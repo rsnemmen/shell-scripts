@@ -3,7 +3,7 @@
 # Convert LaTeX delimiters and generate PDF
 # Converts \(...\) to $...$ and \[...\] to $$...$$ then creates PDF with pandoc
 # Ensures there is a blank line before bullet and numbered lists.
-# Leading blockquote lines (>) are stripped before conversion — chatbot "thinking" sections.
+# Leading chatbot thinking preambles are stripped before conversion.
 
 show_usage() {
     cat << EOF
@@ -133,10 +133,72 @@ finish_progress() {
 
 strip_thinking() {
     awk '
-        started { print; next }
-        /^[[:space:]]*>/ { next }
-        /^[[:space:]]*$/ { next }
-        { started = 1; print }
+        function flush_buffer(    i) {
+            for (i = 1; i <= buffered_count; i++) {
+                print buffered[i]
+            }
+            buffered_count = 0
+        }
+
+        BEGIN {
+            mode = "start"
+            buffered_count = 0
+        }
+
+        {
+            line = $0
+            lower = tolower(line)
+            is_blank = (line ~ /^[[:space:]]*$/)
+            is_quote = (line ~ /^[[:space:]]*>/)
+            is_thinking_marker = (line ~ /^[[:space:]]*[*_][^*_]*[*_][[:space:]]*$/ && lower ~ /thinking/)
+
+            if (mode == "start") {
+                if (NR == 1 && is_thinking_marker) {
+                    buffered[++buffered_count] = line
+                    mode = "maybe-thinking"
+                    next
+                }
+
+                print line
+                mode = "print"
+                next
+            }
+
+            if (mode == "maybe-thinking") {
+                if (is_blank) {
+                    buffered[++buffered_count] = line
+                    next
+                }
+
+                if (is_quote) {
+                    mode = "skip-thinking"
+                    next
+                }
+
+                flush_buffer()
+                print line
+                mode = "print"
+                next
+            }
+
+            if (mode == "skip-thinking") {
+                if (is_blank || is_quote) {
+                    next
+                }
+
+                print line
+                mode = "print"
+                next
+            }
+
+            print line
+        }
+
+        END {
+            if (mode == "maybe-thinking") {
+                flush_buffer()
+            }
+        }
     '
 }
 
