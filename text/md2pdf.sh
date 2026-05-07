@@ -177,6 +177,49 @@ strip_leading_thinking() {
     '
 }
 
+ensure_blank_before_lists() {
+    awk '
+        BEGIN {
+            prev_is_blank = 1
+            prev_is_list = 0
+            in_code_block = 0
+        }
+
+        {
+            line = $0
+
+            if (match(line, /^[[:space:]]{0,3}(```+|~~~+)/)) {
+                print line
+                in_code_block = !in_code_block
+                prev_is_blank = 0
+                prev_is_list = 0
+                next
+            }
+
+            if (in_code_block) {
+                print line
+                prev_is_blank = (line ~ /^[[:space:]]*$/)
+                prev_is_list = 0
+                next
+            }
+
+            is_blank = (line ~ /^[[:space:]]*$/)
+            is_bullet = (line ~ /^[[:space:]]*[-+*][[:space:]]+/)
+            is_ordered = (line ~ /^[[:space:]]*[0-9]+[.)][[:space:]]+/)
+            is_list = (is_bullet || is_ordered)
+
+            if (is_list && !prev_is_blank && !prev_is_list) {
+                print ""
+            }
+
+            print line
+
+            prev_is_blank = is_blank
+            prev_is_list = is_list
+        }
+    '
+}
+
 convert_file() {
     local input="$1" output="$2" verbose="${3:-1}"
     local status
@@ -207,14 +250,14 @@ convert_file() {
     fi
 
     if [[ "$verbose" -eq 1 ]]; then
-        if strip_leading_thinking < "$input" | pandoc "${pandoc_args[@]}"
+        if strip_leading_thinking < "$input" | ensure_blank_before_lists | pandoc "${pandoc_args[@]}"
         then
             status=0
         else
             status=$?
         fi
     else
-        if strip_leading_thinking < "$input" | pandoc "${pandoc_args[@]}" \
+        if strip_leading_thinking < "$input" | ensure_blank_before_lists | pandoc "${pandoc_args[@]}" \
             2>"$temp_err"
         then
             status=0
