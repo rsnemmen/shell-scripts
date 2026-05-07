@@ -426,6 +426,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pdfsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pdf.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -792,6 +803,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pdfsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pdf.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -857,6 +879,10 @@
 <td>Compress grayscale scanned PDFs via ghostscript</td>
 </tr>
 <tr>
+<td><code>pdf.sh</code></td>
+<td>Print PDF files via <code>pdftops</code> + <code>lpr</code></td>
+</tr>
+<tr>
 <td><code>sam2p-batch.sh</code></td>
 <td>Batch convert images (jpg, png) to EPS</td>
 </tr>
@@ -902,6 +928,10 @@ sh PDF-PS/sam2p-batch.sh jpg
 <pre><code class="language-sh">sh PDF-PS/eps2eps-batch.sh
 </code></pre>
 <p>Runs <code>eps2eps</code> on all EPS files in the current directory and writes output to the parent directory.</p>
+<h3 id="pdfsh">pdf.sh</h3>
+<pre><code class="language-sh">sh PDF-PS/pdf.sh file1.pdf file2.pdf ...
+</code></pre>
+<p>Prints PDF files by converting each to PostScript via <code>pdftops</code> and sending to the default printer with <code>lpr</code>.</p>
 
 
 

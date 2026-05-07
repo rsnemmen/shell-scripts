@@ -301,6 +301,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#md2pdfsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        md2pdf.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mdlatex2pdfsh" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -360,6 +371,17 @@
     <span class="md-ellipsis">
       
         utf8.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overleafsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        overleaf.sh
       
     </span>
   </a>
@@ -661,6 +683,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#md2pdfsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        md2pdf.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mdlatex2pdfsh" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -726,6 +759,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#overleafsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        overleaf.sh
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -771,6 +815,10 @@
 <td>Copy .bib file stripping hyperlinks for ApJ templates</td>
 </tr>
 <tr>
+<td><code>md2pdf.sh</code></td>
+<td>Pretty Markdown → PDF via pandoc + eisvogel template</td>
+</tr>
+<tr>
 <td><code>md_latex_delimiters.sh</code></td>
 <td>Convert <code>\(...\)</code> → <code>$...$</code> and <code>\[...\]</code> → <code>$$...$$</code></td>
 </tr>
@@ -782,14 +830,28 @@
 <td><code>utf8.sh</code></td>
 <td>Batch convert files from ISO-8859-1 to UTF-8</td>
 </tr>
+<tr>
+<td><code>overleaf.sh</code></td>
+<td>Clone an Overleaf project and set up dual push to Overleaf and GitHub</td>
+</tr>
 </tbody>
 </table>
 <hr />
 <h2 id="usage">Usage</h2>
+<h3 id="md2pdfsh">md2pdf.sh</h3>
+<pre><code class="language-sh">sh text/md2pdf.sh [--toc|--no-toc] &lt;input.md&gt; [input2.md ...]
+</code></pre>
+<p>Pretty Markdown → PDF using pandoc with the <a href="https://github.com/Wandmalfarbe/pandoc-latex-template">eisvogel</a> template and idiomatic syntax highlighting. Output filename is the input with <code>.pdf</code> extension. Accepts multiple files or globs (<code>*.md</code>) for batch conversion and shows an overall progress bar with the current filename for multi-file runs. Lighter alternative to <code>mdlatex2pdf.sh</code> for documents without LaTeX math. By default it does <strong>not</strong> add a table of contents; pass <code>--toc</code> to include one.</p>
+<p>Flags:</p>
+<ul>
+<li><code>--toc</code> — include a table of contents</li>
+<li><code>--no-toc</code> — suppress the table of contents (default)</li>
+</ul>
 <h3 id="mdlatex2pdfsh">mdlatex2pdf.sh</h3>
 <pre><code class="language-sh">sh text/mdlatex2pdf.sh [options] &lt;input.md&gt; [output.pdf]
+sh text/mdlatex2pdf.sh [options] &lt;input1.md&gt; &lt;input2.md&gt; ...
 </code></pre>
-<p>Most featureful Markdown-to-PDF converter. Converts LaTeX delimiters (<code>\(...\)</code> → <code>$...$</code>) and normalizes lists before calling pandoc.</p>
+<p>Most featureful Markdown-to-PDF converter. Converts LaTeX delimiters (<code>\(...\)</code> → <code>$...$</code>) and normalizes lists before calling pandoc. Accepts multiple files or globs (<code>*.md</code>) for batch conversion, shows an overall progress bar with the current filename for multi-file runs, and names each output after its input.</p>
 <p>Flags:</p>
 <ul>
 <li><code>-s</code>, <code>--simple</code> — basic pandoc output without pre-processing</li>
@@ -817,6 +879,10 @@ cat file.md | sh text/md_latex_delimiters.sh
 <pre><code class="language-sh">sh text/utf8.sh file1 file2 ...
 </code></pre>
 <p>Converts files from ISO-8859-1 encoding to UTF-8 in-place using <code>iconv</code>.</p>
+<h3 id="overleafsh">overleaf.sh</h3>
+<pre><code class="language-sh">sh overleaf.sh
+</code></pre>
+<p>Interactively clones an Overleaf project and adds a GitHub remote, then configures a <code>both</code> remote so <code>git push both</code> pushes to Overleaf and GitHub simultaneously. Requires an existing Overleaf project (get the git URL from the Share button).</p>
 
 
 
