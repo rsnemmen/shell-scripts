@@ -41,8 +41,11 @@ sh script.sh <arguments>
 | `pdf2eps.sh` | Batch convert PDFs to EPS (for academic papers) |
 | `pdfshrink.sh` | Compress grayscale scanned PDFs via ghostscript |
 | `impose-pdf.sh` | Convert PDF to 2-up layout for non-duplex printing |
+| `impose-batch.sh` | Batch apply `impose` to all files of a given extension |
 | `par_impar_impose.sh` | Separate odd/even pages for non-duplex printers |
 | `sam2p-batch.sh` | Batch convert images (jpg, png) to EPS |
+| `eps2eps-batch.sh` | Batch apply `eps2eps` to all `.eps` files in current directory |
+| `pdf.sh` | Print PDF files via `pdftops` + `lpr` |
 
 ---
 
@@ -143,3 +146,11 @@ sh script.sh <arguments>
 | Script | Description |
 |--------|-------------|
 | `swap_used_macos.sh` | Display current swap memory usage on macOS |
+
+---
+
+## Miscellaneous (root)
+
+| Script | Description |
+|--------|-------------|
+| `overleaf.sh` | Clone an Overleaf project and set up dual push to both Overleaf and GitHub |
