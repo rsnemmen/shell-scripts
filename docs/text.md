@@ -11,6 +11,7 @@
 | `md_latex_delimiters.sh` | Convert `\(...\)` → `$...$` and `\[...\]` → `$$...$$` |
 | `mdlatex2pdf.sh` | Convert Markdown with LaTeX math to PDF (most featureful) |
 | `utf8.sh` | Batch convert files from ISO-8859-1 to UTF-8 |
+| `overleaf.sh` | Clone an Overleaf project and set up dual push to Overleaf and GitHub |
 
 ---
 
@@ -84,3 +85,11 @@ sh text/utf8.sh file1 file2 ...
 ```
 
 Converts files from ISO-8859-1 encoding to UTF-8 in-place using `iconv`.
+
+### overleaf.sh
+
+```sh
+sh overleaf.sh
+```
+
+Interactively clones an Overleaf project and adds a GitHub remote, then configures a `both` remote so `git push both` pushes to Overleaf and GitHub simultaneously. Requires an existing Overleaf project (get the git URL from the Share button).

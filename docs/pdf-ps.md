@@ -12,6 +12,7 @@
 | `pdf_2pages.sh` | Batch extract first 2 pages from PDFs |
 | `pdf2eps.sh` | Batch convert PDFs to EPS (for academic papers) |
 | `pdfshrink.sh` | Compress grayscale scanned PDFs via ghostscript |
+| `pdf.sh` | Print PDF files via `pdftops` + `lpr` |
 | `sam2p-batch.sh` | Batch convert images (jpg, png) to EPS |
 
 ---
@@ -91,3 +92,11 @@ sh PDF-PS/eps2eps-batch.sh
 ```
 
 Runs `eps2eps` on all EPS files in the current directory and writes output to the parent directory.
+
+### pdf.sh
+
+```sh
+sh PDF-PS/pdf.sh file1.pdf file2.pdf ...
+```
+
+Prints PDF files by converting each to PostScript via `pdftops` and sending to the default printer with `lpr`.
