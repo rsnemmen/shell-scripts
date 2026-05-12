@@ -3,35 +3,46 @@ set -euo pipefail
 
 # Pretty Markdown → PDF via pandoc + eisvogel template.
 # Leading chatbot thinking preambles are stripped before conversion.
-# For documents with LaTeX math, use mdlatex2pdf.sh instead.
 
 show_usage() {
     cat << EOF
-Usage: $0 [options] <input.md> [input2.md ...]
+Usage: $0 [options] <input.md> [output.pdf]
+       $0 [options] <input1.md> <input2.md> ...
 
 Converts one or more Markdown files to PDF using pandoc and the eisvogel template
 (https://github.com/Wandmalfarbe/pandoc-latex-template).
 
-Output filename is derived by stripping the input's extension and adding .pdf.
+Output filename is derived by stripping the input's extension and adding .pdf,
+or specified explicitly as the second argument in single-file mode.
 
 Options:
+  --math       Convert LaTeX delimiters: \(...\) → \$...\$ and \[...\] → \$\$...\$\$
+  -s, --simple Use basic Pandoc output (no template, 1in margins)
   --toc        Include a table of contents
   --no-toc     Do not include a table of contents (default)
   -h, --help   Show this help message and exit
 
 Arguments:
   input.md     One or more input Markdown files (globs like *.md are fine)
+  output.pdf   Output filename (single-file mode only; default: input with .pdf)
+  -            Read from stdin (single-file mode only; requires explicit output.pdf)
 
 Examples:
-  $0 report.md              # produces report.pdf without a TOC
-  $0 --toc report.md        # produces report.pdf with a TOC
-  $0 a.md b.md c.md         # produces a.pdf, b.pdf, c.pdf
-  $0 *.md                   # batch-convert all .md files in current directory
+  $0 report.md                     # produces report.pdf without a TOC
+  $0 --toc report.md               # produces report.pdf with a TOC
+  $0 --math notes.md               # convert LaTeX delimiters before rendering
+  $0 -s --math notes.md            # simple template with math conversion
+  $0 --math notes.md out.pdf       # explicit output filename
+  $0 a.md b.md c.md                # produces a.pdf, b.pdf, c.pdf
+  $0 *.md                          # batch-convert all .md files in current directory
+  cat notes.md | $0 --math - out.pdf  # stdin input
 EOF
 }
 
 check_dependencies() {
-    command -v pandoc &>/dev/null || { echo "Error: pandoc not found" >&2; exit 1; }
+    for cmd in pandoc sed awk; do
+        command -v "$cmd" &>/dev/null || { echo "Error: $cmd not found" >&2; exit 1; }
+    done
 }
 
 progress_active=0
@@ -177,6 +188,14 @@ strip_leading_thinking() {
     '
 }
 
+convert_delimiters() {
+    sed \
+        -e 's/\\(/$/g' \
+        -e 's/\\)/$/g' \
+        -e 's/\\\[/$$/g' \
+        -e 's/\\\]/$$/g'
+}
+
 ensure_blank_before_lists() {
     awk '
         BEGIN {
@@ -220,23 +239,44 @@ ensure_blank_before_lists() {
     '
 }
 
+preprocess() {
+    if [[ "$math_enabled" -eq 1 ]]; then
+        strip_leading_thinking | convert_delimiters | ensure_blank_before_lists
+    else
+        strip_leading_thinking | ensure_blank_before_lists
+    fi
+}
+
 convert_file() {
     local input="$1" output="$2" verbose="${3:-1}"
+    local input_path="$input"
     local status
     local temp_err=""
-    local -a pandoc_args=(
-        -o "$output"
-        --from=markdown
-        --pdf-engine=xelatex
-        --template=eisvogel
-        --syntax-highlighting=idiomatic
-        -V listings=false
-        -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
-    )
+    local -a pandoc_args
 
-    if [[ ! -r "$input" ]]; then
+    [[ "$input" == "-" ]] && input_path="/dev/stdin"
+
+    if [[ "$input" != "-" && ! -r "$input" ]]; then
         print_stderr_line "Error: Cannot read input '$input'"
         return 1
+    fi
+
+    if [[ "$use_simple" -eq 1 ]]; then
+        pandoc_args=(
+            -o "$output"
+            --pdf-engine=xelatex
+            -V geometry:margin=1in
+        )
+    else
+        pandoc_args=(
+            -o "$output"
+            --from=markdown
+            --pdf-engine=xelatex
+            --template=eisvogel
+            --syntax-highlighting=idiomatic
+            -V listings=false
+            -V header-includes='\def\ptlstinline!#1!{\texttt{#1}}\AtBeginDocument{\def\passthrough#1{\begingroup\let\lstinline\ptlstinline #1\endgroup}}'
+        )
     fi
 
     if [[ "$toc_enabled" -eq 1 ]]; then
@@ -250,14 +290,14 @@ convert_file() {
     fi
 
     if [[ "$verbose" -eq 1 ]]; then
-        if strip_leading_thinking < "$input" | ensure_blank_before_lists | pandoc "${pandoc_args[@]}"
+        if preprocess < "$input_path" | pandoc "${pandoc_args[@]}"
         then
             status=0
         else
             status=$?
         fi
     else
-        if strip_leading_thinking < "$input" | ensure_blank_before_lists | pandoc "${pandoc_args[@]}" \
+        if preprocess < "$input_path" | pandoc "${pandoc_args[@]}" \
             2>"$temp_err"
         then
             status=0
@@ -279,10 +319,20 @@ convert_file() {
 trap cleanup_progress EXIT
 
 toc_enabled=0
+math_enabled=0
+use_simple=0
 
 # Parse options
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --math)
+            math_enabled=1
+            shift
+            ;;
+        -s|--simple)
+            use_simple=1
+            shift
+            ;;
         --toc)
             toc_enabled=1
             shift
@@ -317,15 +367,35 @@ fi
 
 check_dependencies
 
-if [[ ! -f ~/.local/share/pandoc/templates/eisvogel.latex ]]; then
+if [[ "$use_simple" -eq 0 && ! -f ~/.local/share/pandoc/templates/eisvogel.latex ]]; then
     echo "Warning: eisvogel template not found — install it from https://github.com/Wandmalfarbe/pandoc-latex-template" >&2
 fi
 
-if [[ $# -eq 1 ]]; then
+# Single-file mode with explicit output filename
+if [[ $# -eq 2 && "$2" == *.pdf && ! -e "$2" && ( "$1" == "-" || -r "$1" ) ]]; then
+    convert_file "$1" "$2"
+
+# Single-file mode with derived output filename
+elif [[ $# -eq 1 ]]; then
     input="$1"
+    input_path="$input"
+    [[ "$input" == "-" ]] && input_path="/dev/stdin"
     output="${input%.*}.pdf"
+    if [[ "$input" != "-" && ! -r "$input_path" ]]; then
+        echo "Error: Cannot read input '$input'" >&2
+        exit 1
+    fi
     convert_file "$input" "$output"
+
+# Batch mode
 else
+    for f in "$@"; do
+        if [[ "$f" == "-" ]]; then
+            echo "Error: stdin ('-') cannot be used in batch mode" >&2
+            exit 1
+        fi
+    done
+
     total=$#
     completed=0
     fail_count=0

@@ -7,9 +7,8 @@
 | `count-chars.sh` | Count characters and words in a provided string |
 | `countwords.sh` | Count words in LaTeX files using texcount |
 | `cpbib.sh` | Copy .bib file stripping hyperlinks for ApJ templates |
-| `md2pdf.sh` | Pretty Markdown → PDF via pandoc + eisvogel template |
+| `md2pdf.sh` | Markdown → PDF via pandoc + eisvogel; supports `--math`, `--simple`, TOC, batch |
 | `md_latex_delimiters.sh` | Convert `\(...\)` → `$...$` and `\[...\]` → `$$...$$` |
-| `mdlatex2pdf.sh` | Convert Markdown with LaTeX math to PDF (most featureful) |
 | `utf8.sh` | Batch convert files from ISO-8859-1 to UTF-8 |
 | `overleaf.sh` | Clone an Overleaf project and set up dual push to Overleaf and GitHub |
 
@@ -20,29 +19,19 @@
 ### md2pdf.sh
 
 ```sh
-sh text/md2pdf.sh [--toc|--no-toc] <input.md> [input2.md ...]
+sh text/md2pdf.sh [options] <input.md> [output.pdf]
+sh text/md2pdf.sh [options] <input1.md> <input2.md> ...
+cat notes.md | sh text/md2pdf.sh [options] - output.pdf
 ```
 
-Pretty Markdown → PDF using pandoc with the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template and idiomatic syntax highlighting. Output filename is the input with `.pdf` extension. Accepts multiple files or globs (`*.md`) for batch conversion and shows an overall progress bar with the current filename for multi-file runs. Lighter alternative to `mdlatex2pdf.sh` for documents without LaTeX math. By default it does **not** add a table of contents; pass `--toc` to include one.
+Markdown → PDF using pandoc with the [eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template and idiomatic syntax highlighting. Output filename is derived from the input (`.md` → `.pdf`) or specified explicitly as the second argument. Accepts multiple files or globs (`*.md`) for batch conversion and shows an overall progress bar with the current filename for multi-file runs. Strips leading chatbot thinking preambles before conversion.
 
 Flags:
 
+- `--math` — convert LaTeX delimiters (`\(...\)` → `$...$`, `\[...\]` → `$$...$$`) before rendering; useful for LLM output and documents exported from Overleaf-style tools
+- `-s`, `--simple` — bypass eisvogel; produce a basic PDF with 1in margins (no template, no syntax highlighting)
 - `--toc` — include a table of contents
 - `--no-toc` — suppress the table of contents (default)
-
-### mdlatex2pdf.sh
-
-```sh
-sh text/mdlatex2pdf.sh [options] <input.md> [output.pdf]
-sh text/mdlatex2pdf.sh [options] <input1.md> <input2.md> ...
-```
-
-Most featureful Markdown-to-PDF converter. Converts LaTeX delimiters (`\(...\)` → `$...$`) and normalizes lists before calling pandoc. Accepts multiple files or globs (`*.md`) for batch conversion, shows an overall progress bar with the current filename for multi-file runs, and names each output after its input.
-
-Flags:
-
-- `-s`, `--simple` — basic pandoc output without pre-processing
-- `-h`, `--help` — show usage
 
 ### md_latex_delimiters.sh
 
