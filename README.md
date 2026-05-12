@@ -24,9 +24,10 @@ sh script.sh <arguments>
 | `count-chars.sh` | Count characters and words in a provided string |
 | `countwords.sh` | Count words in LaTeX files using texcount |
 | `cpbib.sh` | Copy .bib file stripping hyperlinks for ApJ templates |
-| `md2pdf.sh` | Markdown → PDF via pandoc + eisvogel; supports `--math`, `--simple`, TOC, batch |
 | `md_latex_delimiters.sh` | Convert `\(...\)` → `$...$` and `\[...\]` → `$$...$$` |
 | `utf8.sh` | Batch convert files from ISO-8859-1 to UTF-8 |
+
+> **Moved:** `md2pdf` now lives as a standalone project at <https://github.com/rsnemmen/md2pdf>.
 
 ---
 

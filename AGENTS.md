@@ -46,7 +46,7 @@ Prefer modern Bash for new or substantially revised scripts:
 - Send errors to stderr with `>&2`; keep normal output on stdout.
 - Use `mktemp` plus `trap` for temporary files.
 
-Script names should be lowercase and descriptive, usually hyphenated or following the existing legacy name in that folder, for example `md2pdf.sh` or `batch-rename.sh`.
+Script names should be lowercase and descriptive, usually hyphenated or following the existing legacy name in that folder, for example `jupyter2md.sh` or `batch-rename.sh`.
 
 ## Testing Guidelines
 

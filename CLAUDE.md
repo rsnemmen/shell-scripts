@@ -77,7 +77,6 @@ When adding or updating scripts, keep the corresponding page in `docs/` in sync.
 
 ## Notable Scripts
 
-- `text/md2pdf.sh` — Markdown → PDF via pandoc; supports LaTeX math (`--math`), simple mode, batch, stdin
 - `text/md_latex_delimiters.sh` — Converts `\(...\)` and `\[...\]` to `$...$` delimiters
 - `file-utilities/jupyter2md.sh` — Batch converts Jupyter notebooks to Markdown
 - `gaming/create_m3u.py` — Only Python script; creates M3U playlists for multi-disk ROMs
